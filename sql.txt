@@ -1,0 +1,526 @@
+﻿Create Database QuanLyThuCung;
+
+use QuanLyThuCung
+--tạo bảng loại mỹ phẩm
+Create table tblGiongLoai(
+	iMaLoai int identity(1,1) Constraint PK_Loai Primary Key,
+	sTenLoai nvarchar(50)
+);	
+--thêm dữ liệu bảng loại mỹ phẩm
+INSERT into tblGiongLoai(sTenLoai) values(N'Nhật');
+	Insert into tblGiongLoai(sTenLoai) values(N'Anh');
+	
+--tạo bảng hãng mỹ phẩm
+Create table tblCuaHang(
+	iCuaHang int identity(1,1) Constraint PK_CuaHang Primary Key,
+	sTenCuaHang nvarchar(30),
+	sDiaChi nvarchar(50)
+);
+
+--thêm dữ liệu bảng hãng mỹ phẩm
+	Insert into tblCuaHang(sTenCuaHang,sDiaChi) values(N'Innisfree',N'Việt Nam');
+	Insert into tblCuaHang(sTenCuaHang,sDiaChi) values(N'Perfect Whip',N'Hà Nội');
+	Insert into tblCuaHang(sTenCuaHang,sDiaChi) values(N'Access',N'Hà Nội');
+	Insert into tblCuaHang(sTenCuaHang,sDiaChi) values(N'Nivia Men',N'Hà Nội');
+	Insert into tblCuaHang(sTenCuaHang,sDiaChi) values(N'Oxy',N'Hà Nội');
+	Insert into tblCuaHang(sTenCuaHang,sDiaChi) values(N'NovAvg Men',N'Hà Nội');
+--tạo bảng my pham
+
+Create table tblThuCung(
+	iID int identity(1,1) Constraint PK_MatHang Primary Key,
+	sTenThuCung nvarchar(30),
+	fGia float,
+	iMaLoai int Constraint FK_ThuCung_GiongLoai Foreign Key References tblGiongLoai(iMaLoai),
+	iCuaHang int Constraint FK_ThuCung_CuaHang Foreign Key References tblCuaHang(iCuaHang),
+	bGioiTinh bit,
+	sMoTa ntext,
+	sLinkImg ntext
+);
+--thêm dữ liệu bảng mỹ phẩm
+	Insert into tblThuCung(sTenThuCung,fGia,iMaLoai,iCuaHang,bGioiTinh,sMoTa,sLinkImg) 
+		values(N'Micky',1500000,1,1,1,N'Thông minh ', N'4.png'),
+			(N'Tom',75000,1,1,1,N'Tinh nghịch', N'3.png'),
+			(N'Jery',75000,1,1,1,N'Mau lớn khôn ngoan', N'33.png'),
+			(N'Mixx',75000,2,2,0,N'Mau lớn khôn ngoan', N'1.png'),
+			(N'July',75000,1,2,0,N'Thông minh', N'22.png'),
+			(N'Nicky',75000,1,1,0,N'Tinh nghịch', N'11.png'),
+			(N'John',75000,1,1,1,N'Tinh nghịch', N'2.png'),
+			(N'Doha',75000,1,1,0,N'Tinh nghịch', N'66.png');
+--tạo bảng chi tiết my pham
+Create table tblThuCung_ChiTiet(
+	iSTT int identity(1,1),
+	iID int Constraint FK_ThuCungChiTiet_ThuCung Foreign Key References tblThuCung(iID),
+	iTuoi int Constraint CheckSize Check(iTuoi>=1 and iTuoi <=100),
+	iSoLuong int Constraint CheckSlg Check(iSoLuong>=0),
+	Constraint PK_MyPhamChiTiet Primary Key(iID, iTuoi)
+);
+
+Insert into tblThuCung_ChiTiet(iID, iTuoi, iSoLuong) values(1,2,55),(1,36,22),(1,38,69)
+Insert into tblThuCung_ChiTiet(iID, iTuoi, iSoLuong) values(1,7,5),(1,3,50),(1,4,50),(1,14,50),(1,24,50),(1,44,50)
+Insert into tblThuCung_ChiTiet(iID, iTuoi, iSoLuong) values(2,36,50),(2,37,50),(2,38,50),(2,39,50),(2,40,50),(2,41,50),(2,42,50),(2,43,50)
+
+--tạo dữ liệu bảng user
+Create table tblUser(
+	iID int identity(1,1) Constraint PK_User Primary Key,
+	sUsername nvarchar(15),
+	sPassword nvarchar(30),
+	sTenKH nvarchar(50),
+	sDiaChi nvarchar(50),
+	sSDT nvarchar(12)
+);
+--thêm ràng buộc phải là duy nhất cho sUsername
+Alter table tblUser
+	Add Constraint UQ_Username Unique(sUsername)
+--thêm dữ liệu bảng tblUser
+	INSERT into tblUser (sUsername,sPassword,sTenKH,sDiaChi,sSDT) values('huannv','huannv',N'Nguyễn Văn Huấn',N'Hà Nội','0973734495')
+	Insert into tblUser (sUsername,sPassword,sTenKH,sDiaChi,sSDT) values('nvhuan','nvhuan',N'Huấn NV',N'BN','016323456789')
+--tạo bảng hóa đơn
+Create table tblHoaDon(
+	iMaHD int identity(1,1) Constraint PK_HD Primary Key,
+	dNgayBan Datetime Constraint CheckDate Check (dNgayBan<=getDate()),
+	iMaKH int Constraint FK_HD_KH Foreign Key References tblUser(iID),
+	iThanhTien int
+);
+
+--tạo bảng chi tiết hóa đơn
+CREATE table tblChiTietHoaDon(
+	iMaHD int Constraint FK_CTHD_HD Foreign Key References tblHoaDon(iMaHD) NOT NULL,
+	iID INT NOT NULL,
+	iTuoi int NOT null,
+	iSoLuong int Constraint CheckSoLuong Check(iSoLuong >0),
+	fGia int,
+	Constraint FK_CTHD_ThuCungChiTiet Foreign Key (iID, iTuoi) References tblThuCung_ChiTiet(iID, iTuoi),
+	CONSTRAINT PK_CTHD PRIMARY KEY (iMaHD,iID,iTuoi) 
+);
+GO
+
+
+--Thủ tục tìm my pham theo id 
+CREATE Proc XemTTThuCung @id int
+as
+begin 
+	Select tblThuCung.iID, tblThuCung.sTenThuCung, tblThuCung.fGia, tblGiongLoai.sTenLoai, tblCuaHang.sTenCuaHang, tblThuCung.bGioiTinh, tblThuCung.sMoTa, tblThuCung.sLinkImg
+		from tblThuCung, tblCuaHang, tblGiongLoai
+		where tblThuCung.iID = @id and tblThuCung.iMaLoai = tblGiongLoai.iMaLoai and tblThuCung.iCuaHang = tblCuaHang.iCuaHang
+end
+
+XemTTThuCung 5
+
+--Lọc ra loại my phẩm với bGioitinh: nam
+Select DISTINCT tblThuCung.iMaLoai, tblGiongLoai.sTenLoai from tblThuCung, tblGiongLoai
+ where tblThuCung.iMaLoai = tblGiongLoai.iMaLoai and tblThuCung.bGioiTinh=1
+GO
+
+--Lọc ra loại mỹ phẩm của Nam/Nữ theo giới tính truyền vào
+Create Proc GetgiongLoai @bGioiTinh bit 
+as Select DISTINCT tblThuCung.iMaLoai, tblGiongLoai.sTenLoai 
+FROM tblThuCung, tblGiongLoai 
+WHERE tblThuCung.iMaLoai = tblGiongLoai.iMaLoai and tblThuCung.bGioiTinh= @bGioiTinh
+go
+
+
+--Thủ tục xác thực đăng nhập: trả về bản ghi nếu đúng
+Create Proc XacThucDangNhap @sUserName nvarchar(15), @sPass nvarchar(30)
+as
+	Begin
+		Select tblUser.sTenKH from tblUser where tblUser.sUsername = @sUserName and tblUser.sPassword = @sPass
+	END
+    
+--test đăng nhập
+GO
+
+EXEC XacThucDangNhap huannv,huannv;
+
+GO
+
+--Thủ tục đăng ký khách hàng (User)
+Create Proc DangKyUser @sUserName nvarchar(15), @sPass nvarchar(30),@sTenKH nvarchar(50), @sDiaChi nvarchar(50),@sSDT nvarchar(12) as
+Begin
+	Insert into tblUser(sUsername, sPassword, sTenKH,sDiaChi, sSDT)
+	Values(@sUserName, @sPass, @sTenKH, @sDiaChi, @sSDT)
+END
+--test đăng ký
+GO
+
+DangKyUser N'huannv123','123456',N'Huấn NV',N'Hà Nội','0165123456'
+GO
+
+-- lấy toàn bộ danh sách mỹ phẩm nếu không có tham số truyền vào
+-- lấy toàn bộ danh sách mỹ phẩm theo giới tính nếu có tham số giới tính truyền vào
+-- ,....
+ 
+create Proc GetThuCung @bGioiTinh bit = null, @iMaLoai int = null, @iCuaHang int = null, @min float = 0, @max float = 0 
+AS
+	begin
+		declare @sSql as nvarchar(1000)
+		declare @ParamList as nvarchar(1000)
+		set @sSql = 'Select * from tblThuCung Where (1=1)' 
+		if (@bGioiTinh is not null)
+			set @sSql = @sSql + 'and (bGioiTinh = @bGioiTinh)'
+		if (@iMaLoai is not null)
+			set @sSql = @sSql + 'and (iMaLoai = @iMaLoai)'
+		if (@iCuaHang is not null)
+			set @sSql = @sSql + 'and (iCuaHang = @iCuaHang)'
+		if (@max = 0) 
+			set @sSql = @sSql + 'and fGia >= @min'
+		if (@max != 0)
+			set @sSql = @sSql + 'and fGia >=@min and fGia <= @max'
+		set @ParamList = '@bGioiTinh bit,
+						  @iMaLoai int,
+						  @iCuaHang int,
+						  @min float,
+						  @max float';
+		EXEC SP_EXECUTESQL  @sSql, 
+						  @ParamList, 
+						  @bGioiTinh,
+						  @iMaLoai,
+						  @iCuaHang,
+						  @min,
+						  @max;
+	end 
+
+	GO
+
+
+---tìm kiếm mỹ phẩm theo value truyền vào
+	CREATE Proc sp_TimKiem @value NVARCHAR(300)
+	AS
+Begin
+	SELECT dbo.tblThuCung.iID,dbo.tblThuCung.sTenThuCung,dbo.tblThuCung.fGia,dbo.tblThuCung.iMaLoai,dbo.tblThuCung.iCuaHang
+	,dbo.tblThuCung.bGioiTinh,dbo.tblThuCung.sMoTa,dbo.tblThuCung.sLinkImg
+	FROM dbo.tblThuCung,dbo.tblCuaHang,dbo.tblGiongLoai 
+	WHERE tblThuCung.iMaLoai=dbo.tblGiongLoai.iMaLoai AND 
+	tblThuCung.iCuaHang=dbo.tblCuaHang.iCuaHang 
+	AND dbo.tblThuCung.sTenThuCung  LIKE '%' + @value + '%' 
+	OR
+	(tblThuCung.iMaLoai=dbo.tblGiongLoai.iMaLoai AND 
+	tblThuCung.iCuaHang=dbo.tblCuaHang.iCuaHang 
+	AND
+	 dbo.tblCuaHang.sTenCuaHang  LIKE '%' + @value + '%'  )
+	 OR
+	 (tblThuCung.iMaLoai=dbo.tblGiongLoai.iMaLoai AND 
+	tblThuCung.iCuaHang=dbo.tblCuaHang.iCuaHang 
+	AND
+	  dbo.tblGiongLoai.sTenLoai  LIKE '%' + @value + '%'  )
+END
+GO
+
+sp_timKiem gg
+--tạo bảng giỏ hàng
+Create table tblGioHang(
+	iMaGH int identity(1,1) Constraint PK_GioHang Primary Key,
+	iMaKH int Constraint FK_GioHang_User Foreign Key References tblUser(iID),
+	itongTien int
+);
+--tạo bảng chi tiết giỏ hàng
+
+
+CREATE table tblChiTietGioHang(
+	iMaGH int Constraint FK_CTGH_GH Foreign Key References tblGioHang(iMaGH) NOT NULL,
+	iID INT NOT NULL,
+	iTuoi int,
+	iSoLuong int Constraint CheckSoLuongGH Check(iSoLuong >0),
+	Constraint FK_CTGH_ThuCungCHITIET Foreign Key (iID, iTuoi) References tblThuCung_ChiTiet(iID, iTuoi),
+	Constraint PK_CTGH PRIMARY KEY (iMaGH,iID,iTuoi)
+
+);
+GO
+
+
+--thêm dữ liệu bảng giỏ hàng
+	INSERT INTO dbo.tblGioHang ( iMaKH, itongTien )VALUES  ( 1,  0)
+	INSERT INTO dbo.tblGioHang ( iMaKH, itongTien )VALUES  ( 2,  0)
+	INSERT INTO dbo.tblGioHang ( iMaKH, itongTien )VALUES  ( 3,  0)
+
+---proc thêm giỏ hàng với mã khách hàng
+Create Proc sp_ThemGioHang @iMaKH int
+AS
+BEGIN
+
+	INSERT INTO dbo.tblGioHang
+        ( iMaKH, itongTien )
+VALUES  ( @iMaKH, -- iMaKH - int
+          0  -- itongTien - int
+ 
+         )
+
+
+END
+GO
+
+
+
+---proc thêm chi tiết giỏ hàng theo mã giỏ hàng
+CREATE Proc sp_ThemChiTietGioHang @iMaGH int,@iID int,@iTuoi INT,@isoluong INT
+AS
+BEGIN
+
+
+INSERT INTO dbo.tblChiTietGioHang
+        ( iMaGH, iID, iTuoi, iSoLuong )
+VALUES  ( @iMaGH, -- iMaGH - int
+          @iID, -- iID - int
+          @iTuoi, -- iTuoi - int
+          @isoluong -- iSoLuong - int
+          )
+
+END
+GO
+---triger khi 
+/*
+CREATE TRIGGER trg_ThemChiTietGioHang ON dbo.tblChiTietGioHang AFTER INSERT AS
+BEGIN
+UPDATE tblGiay_ChiTiet
+SET tblGiay_ChiTiet.iSoLuong = tblGiay_ChiTiet.iSoLuong - (SELECT iSoLuong 
+FROM tblChiTietGioHang 
+WHERE tblGiay_ChiTiet.iID = tblChiTietGioHang.iID AND tblGiay_ChiTiet.iTuoi = tblChiTietGioHang.iTuoi )
+FROM dbo.tblChiTietGioHang JOIN dbo.tblGiay_ChiTiet ON tblGiay_ChiTiet.iID = tblChiTietGioHang.iID AND tblGiay_ChiTiet.iTuoi = tblChiTietGioHang.iTuoi
+END
+GO
+*/
+
+GO
+
+
+---proc xem chi tiết giỏ hàng theo mã giỏ hàng
+CREATE Proc sp_XemChiTietGioHang @iMaGH int
+AS
+BEGIN
+SELECT dbo.tblChiTietGioHang.iMaGH,dbo.tblChiTietGioHang.iID,
+dbo.tblThuCung.sTenThuCung,dbo.tblThuCung.sLinkImg,dbo.tblThuCung.fGia,dbo.tblChiTietGioHang.iTuoi,dbo.tblChiTietGioHang.iSoLuong 
+FROM tblChiTietGioHang,tblThuCung,tblThuCung_ChiTiet 
+WHERE iMaGH = @iMaGH AND tblChiTietGioHang.iID=tblThuCung_ChiTiet.iID AND tblThuCung_ChiTiet.iID=tblThuCung.iID AND tblChiTietGioHang.iTuoi=tblThuCung_ChiTiet.iTuoi
+END
+GO
+
+
+--Tạo bảng Admin
+Create table tblAdmin(
+	iID int identity(1,1) Constraint PK_Admin Primary Key,
+	sUsername nvarchar(15) Constraint UQ_Name Unique,
+	sPassword nvarchar(30),
+	sTenAdmin nvarchar(50)
+);
+Insert into tblAdmin (sUsername, sPassword, sTenAdmin) values(N'huan123',N'huan123',N'admin')
+Insert into tblAdmin (sUsername, sPassword, sTenAdmin) values(N'123456',N'123456a@',N'huan Admin')
+
+--Proc Xac Thuc dang nHap Admin
+
+Create Proc XacThucAdmin @sUsername nvarchar(15), @sPassword nvarchar(30) as
+Begin 
+	Select sTenAdmin from tblAdmin where sUsername = @sUsername and sPassword = @sPassword
+End
+--Test dang nhap
+XacThucAdmin huan123,huan123
+
+SELECT dbo.tblAdmin.sTenAdmin FROM dbo.tblAdmin WHERE sUsername = 'huan123'
+
+
+--Proc Lấy TT thu cung cho thằng admin
+CREATE Proc GetSanPhamAdmin as begin
+Select tblThuCung.iID, tblThuCung.sTenThuCung, tblThuCung.fGia,tblThuCung.iMaLoai, 
+		tblGiongLoai.sTenLoai,tblThuCung.iCuaHang, tblCuaHang.sTenCuaHang, tblThuCung.bGioiTinh, tblThuCung.sMoTa, tblThuCung.sLinkImg
+		from tblThuCung, tblCuaHang, tblGiongLoai
+		where tblThuCung.iMaLoai = tblGiongLoai.iMaLoai and tblThuCung.iCuaHang = tblCuaHang.iCuaHang
+end
+
+
+--Proc Update sản phẩm cho thằng admin
+
+Create Proc UpdateSanPhamAdmin @iID int, @sTenThuCung nvarchar(30), @fGia float, 
+			@iMaLoai int, @iCuaHang int, @bGioiTinh bit, @sMoTa nvarchar(500), @sLinkImg nvarchar(500)
+as begin
+	Update tblThuCung
+	set sTenThuCung = @sTenThuCung, 
+		fGia = @fGia,
+		iMaLoai = @iMaLoai,
+		iCuaHang = @iCuaHang,
+		bGioiTinh = @bGioiTinh,
+		sMoTa = @sMoTa,
+		sLinkImg = @sLinkImg
+	where iID = @iID
+end
+
+
+
+Create Proc InsertThuCungAdmin @sTenThuCung nvarchar(30), @fGia float, @iMaLoai int, @iCuaHang int, 
+			@bGioiTinh bit, @sMoTa nvarchar(500), @sLinkImg nvarchar(500)
+as begin
+	Insert into tblThuCung(sTenThuCung,fGia,iMaLoai,iCuaHang,bGioiTinh,sMoTa,sLinkImg) 
+	Values(@sTenThuCung, @fGia, @iMaLoai,@iCuaHang,@bGioiTinh,@sMoTa,@sLinkImg)
+	Select @@IDENTITY as iID;
+
+	Insert into tblThuCung_ChiTiet(iID, iTuoi, iSoLuong)
+	values(@@IDENTITY, 36,0),
+		(@@IDENTITY, 37,0),
+		(@@IDENTITY, 38,0),
+		(@@IDENTITY, 39,0),
+		(@@IDENTITY, 4,0),
+		(@@IDENTITY, 14,0),
+		(@@IDENTITY, 24,0),
+		(@@IDENTITY, 40,0),
+		(@@IDENTITY, 44,0)
+end
+
+
+Create Proc SuaSoLuongThuCungAdmin @iID int, @iSoLuong36 int, @iSoLuong37 int, @iSoLuong38 int, @iSoLuong39 int, 
+@iSoLuong40 int, @iSoLuong14 int, @iSoLuong24 int, @iSoLuong34 int as
+begin
+	Update tblThuCung_ChiTiet
+	set iSoLuong = @iSoLuong36
+	where iID = @iID and iTuoi = 36;
+	Update tblThuCung_ChiTiet
+	set iSoLuong = @iSoLuong37
+	where iID = @iID and iTuoi = 37;
+	Update tblThuCung_ChiTiet
+	set iSoLuong = @iSoLuong38
+	where iID = @iID and iTuoi = 38;
+	Update tblThuCung_ChiTiet
+	set iSoLuong = @iSoLuong39
+	where iID = @iID and iTuoi = 39;
+	Update tblThuCung_ChiTiet
+	set iSoLuong = @iSoLuong14
+	where iID = @iID and iTuoi = 14;
+	Update tblThuCung_ChiTiet
+	set iSoLuong = @iSoLuong24
+	where iID = @iID and iTuoi = 24;
+	Update tblThuCung_ChiTiet
+	set iSoLuong = @iSoLuong40
+	where iID = @iID and iTuoi = 40;
+	
+end
+
+SuaSoLuongSanPhamAdmin 1,10,50,50,50,50,50,50,50,51
+
+--Proc Lấy Loại my pham
+Create Proc GetGiongLoaiAdmin @iMaLoai int = 0 as 
+Begin
+ if @iMaLoai = 0
+	Select * from tblGiongLoai 
+ else Select * from tblGiongLoai where iMaLoai = @iMaLoai
+end
+--Proc update loại MyPham
+Create Proc UpdateGiongLoaiAdmin @iMaLoai int, @sTenLoai nvarchar(50) as begin 
+	Update tblGiongLoai set sTenLoai = @sTenLoai where tblGiongLoai.iMaLoai = @iMaLoai
+end
+
+--Proc insert loại MyPham
+
+Create Proc InsertGiongLoaiAdmin @sTenLoai nvarchar(50) as begin 
+	Insert into tblGiongLoai (sTenLoai) values(@sTenLoai);
+end
+
+
+--Proc Lấy tblCuaHang
+Create Proc GetCuaHangAdmin @iCuaHang int = 0 as 
+Begin
+ if @iCuaHang = 0
+	Select * from tblCuaHang 
+ else Select * from tblCuaHang where iCuaHang = @iCuaHang
+end
+
+GetHangMyPhamAdmin 1
+
+--Proc Update tblCuaHang
+Create Proc UpdateCuaHangAdmin @iCuaHang int, @sTenCuaHang nvarchar(50), @sDiaChi nvarchar(50) as 
+begin
+	Update tblCuaHang set sTenCuaHang = @sTenCuaHang, sDiaChi = @sDiaChi where iCuaHang = @iCuaHang
+end
+
+--Proc Insert HAngMyPham
+Create Proc InsertCuaHangAdmin @sTenCuaHang nvarchar(50), @sDiaChi nvarchar(50) as 
+begin
+	Insert into tblCuaHang(sTenCuaHang, sDiaChi) values(@sTenCuaHang, @sDiaChi)
+end
+
+--Proc Lay Danh sach khach hàng
+Create Proc GetKhachHangAdmin @iID int = 0 as Begin
+	if @iID = 0
+		Select * from tblUser
+	else
+		Select * from tblUser where iID = @iID
+End
+
+
+--PROC UPDATE TT KHÁCH HÀNG
+Create Proc UpdateKhachHangAdmin @iID int, @sUsername nvarchar(15), @sTenKH nvarchar(50),
+								@sDiaChi nvarchar(50), @sSDT nvarchar(12) as
+Begin
+	Update tblUser set sUsername = @sUsername, sTenKH = @sTenKH, sDiaChi = @sDiaChi, sSDT = @sSDT
+	where iID = @iID
+ENd
+
+Select top 10 * from tblThuCung where bGioiTinh = 1 order by iID DESC
+
+SELECT * FROM dbo.tblChiTietGioHang WHERE iMaGH =1
+
+--DELETE FROM dbo.tblChiTietGioHang WHERE iMaGH =1 AND iID = 1 AND iTuoi = 36
+
+SELECT * FROM dbo.tblUser WHERE sUsername =N'huannv'
+
+--UPDATE dbo.tblChiTietGioHang SET iSoLuong = 3 WHERE iMaGH = 1 AND iID =1 AND iTuoi =1
+
+--INSERT INTO dbo.tblHoaDon( dNgayBan, iMaKH, iThanhTien )VALUES  ( GETDATE(),0,0)
+
+
+
+--SELECT top 1 iMaHD FROM dbo.tblHoaDon WHERE iMaKH = 1 order by dNgayBan DESC 
+--INSERT INTO dbo.tblChiTietHoaDon( iMaHD, iID, iTuoi, iSoLuong, fGia )VALUES  ( 0, 0,0,0, 0 )
+SELECT * FROM dbo.tblHoaDon
+--DELETE dbo.tblChiTietGioHang WHERE iMaGH =1
+
+SELECT iMaGH FROM dbo.tblGioHang WHERE iMaKH = 1
+
+
+--Tạo thêm cột địa chỉ nhận cho hóa đơn
+Alter table tblHoaDon add sDiaChi nvarchar(100)
+
+--Trigger giảm số lượng hàng khi thanh toán
+Create trigger TG_GiamSoLuongHang on tblChiTietHoaDon for insert,update
+as Begin
+	Declare @iIDThuCung int, @iTuoi int, @iSoLuong int, @HangTon int
+	Set @iIDThuCung = (Select iID from inserted)
+	set @iTuoi = (Select iTuoi from inserted)
+	Set @iSoLuong = (Select iSoLuong from inserted)
+	Set @HangTon = (Select tblThuCung_ChiTiet.iSoLuong from tblThuCung_ChiTiet where tblThuCung_ChiTiet.iSoLuong = @iSoLuong and tblThuCung_ChiTiet.iTuoi = @iTuoi )
+		if(@iSoLuong>@HangTon)
+			begin
+				Rollback tran
+			end
+		else
+			begin
+				Update tblThuCung_ChiTiet set tblThuCung_ChiTiet.iSoLuong = tblThuCung_ChiTiet.iSoLuong - @iSoLuong where tblThuCung_ChiTiet.iID = @iIDThuCung and 
+				tblThuCung_ChiTiet.iTuoi = @iTuoi
+			end
+End
+
+
+
+
+--Proc GEt thông tin hóa đơn
+create Proc GetHoaDonAdmin @iMaHD int = 0 as Begin
+	if @iMaHD = 0
+		Select iMaHD, dNgayBan, tblUser.sTenKH, iThanhTien, tblHoaDon.sDiaChi from tblHoaDon, tblUser where tblHoaDon.iMaKH = tblUser.iID
+	else
+		Select iMaHD, dNgayBan, tblUser.sTenKH, iThanhTien, tblHoaDon.sDiaChi from tblHoaDon, tblUser where tblHoaDon.iMaKH = tblUser.iID and iMaHD = @iMaHD
+End
+
+
+GetHoaDonAdmin 2
+
+--Proc upadte  hóa đơn
+
+Create Proc UpdateHoaDonAdmin @iMaHD int, @sDiaChi nvarchar(50) as
+Begin
+	Update tblHoaDon set sDiaChi= @sDiaChi
+	where iMaHD = @iMaHD
+ENd
+
+--Proc Lấy chi tiết hóa đơn
+create Proc GetCTHDAdmin @iMaHD int as
+Begin 
+	Select tblChiTietHoaDon.iMaHD, tblChiTietHoaDon.iID, tblThuCung.sTenThuCung, tblChiTietHoaDon.iTuoi, tblThuCung.fGia ,tblChiTietHoaDon.iSoLuong, tblThuCung.sLinkImg
+	from tblChiTietHoaDon, tblThuCung where tblThuCung.iID = tblChiTietHoaDon.iID and tblChiTietHoaDon.iMaHD = @iMaHD
+End
+
+GetCTHDAdmin 1
